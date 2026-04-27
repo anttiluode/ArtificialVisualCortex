@@ -67,6 +67,26 @@ It was discovered empirically, not designed in.
     AdaptiveDecoderConv → reconstruction (512×512×3)
 ```
 
+### Teacher-Student Distillation (Optional but Recommended)
+
+The system optionally uses the VAE from **Stable Video Diffusion** as a
+teacher. Stable Video Diffusion spent significant compute learning to
+compress a 512×512 image into a rich `[4, 64, 64]` latent space. The
+student encoder here is tiny and fast — the teacher shows it what a
+good latent looks like, dramatically accelerating learning.
+
+If `diffusers` is not installed, the system falls back to pure
+self-supervision (pixel reconstruction loss only). It still works, just
+learns more slowly and with a less structured latent space.
+
+**What SVD contributes**: a well-trained spatial compression dictionary.
+
+**What SVD does not know**: continuous time, oscillators, fast/slow
+buffers, phase-locking, adrenaline, or any temporal dynamics. All of that
+is the Wave Cortex, entirely independent of the teacher.
+
+---
+
 Each latent voxel is tracked by a continuous oscillator:
 
 ```
@@ -280,13 +300,6 @@ Interference in a complex oscillator field.
 Physics, neuroscience, machine learning — one formula.
 
 ---
-
-## References
-
-**The EML Operator** The nomenclature and foundational logic for the system's "EML" (Energy/Activity) signal draws conceptual inspiration from the universal EML mathematical primitive. 
-
-* **Odrzywołek, A. (2026).** *All elementary functions from a single operator*. arXiv:2603.21852v2 [cs.SC]. 
-This paper demonstrates that a single binary operator, `eml(x,y) = exp(x) - ln(y)`, together with the constant 1, can generate all standard continuous mathematics (including trigonometric and transcendental functions). In this repository, the EML signal functions as the foundational, macroscopic metric of the continuous oscillator field's activity.
 
 *PerceptionLab / Antti Luode, Helsinki 2026*
 *"do not hype, do not lie, just show"*
