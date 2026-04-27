@@ -261,6 +261,12 @@ unitvae7.py               — main GUI application
   HierarchicalCortexApp   — Tkinter GUI
 ```
 
+##
+
+Trained files for unitvae6 and 7 can be found in Brains folder. 
+
+Note 6 and 7 have different system. 
+
 ---
 
 ## Running
