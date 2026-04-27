@@ -305,5 +305,12 @@ Physics, neuroscience, machine learning — one formula.
 
 ---
 
+## References
+
+**The EML Operator** The nomenclature and foundational logic for the system's "EML" (Energy/Activity) signal draws conceptual inspiration from the universal EML mathematical primitive. 
+
+* **Odrzywołek, A. (2026).** *All elementary functions from a single operator*. arXiv:2603.21852v2 [cs.SC]. 
+This paper demonstrates that a single binary operator, `eml(x,y) = exp(x) - ln(y)`, together with the constant 1, can generate all standard continuous mathematics (including trigonometric and transcendental functions). In this repository, the EML signal functions as the foundational, macroscopic metric of the continuous oscillator field's activity.
+
 *PerceptionLab / Antti Luode, Helsinki 2026*
 *"do not hype, do not lie, just show"*
