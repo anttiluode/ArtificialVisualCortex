@@ -1,4 +1,7 @@
 # Artificial Visual Cortex
+
+![Image](image.png)
+
 **UnitVAE — Hierarchical Wave Cortex**
 *PerceptionLab / Antti Luode, 2026*
 
