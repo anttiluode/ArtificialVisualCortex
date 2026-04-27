@@ -1,6 +1,6 @@
 # Artificial Visual Cortex
-### UnitVAE — Hierarchical Wave Cortex
-**PerceptionLab / Antti Luode, 2026**
+**UnitVAE — Hierarchical Wave Cortex**
+*PerceptionLab / Antti Luode, 2026*
 
 ---
 
@@ -10,9 +10,8 @@ A real-time visual perception system that learns to see from a webcam,
 not by storing static weights, but by maintaining a **living oscillatory
 field** over the latent space of a convolutional autoencoder.
 
-It is not a diffusion model.
-It is not a standard VAE.
-It is not a recurrent network.
+It is not a diffusion model. It is not a standard VAE. It is not a
+recurrent network.
 
 It is a **continuous-time dynamical system** with two coupled timescales,
 modelled directly on the architecture of the mammalian visual cortex.
@@ -23,12 +22,12 @@ modelled directly on the architecture of the mammalian visual cortex.
 
 Standard video AI scrambles text. Hold a book up to any modern generative
 model and the letters melt into abstract shapes. This is not a hardware
-problem. It is a **structural** problem: the model has no persistent
-memory of what the scene was a second ago, so it cannot enforce
-symbol stability across frames.
+problem. It is a *structural* problem: the model has no persistent memory
+of what the scene was a second ago, so it cannot enforce symbol stability
+across frames.
 
-This system does not scramble text. Once the slow buffer phase-locks onto
-the regular low-frequency signature of a word (its overall shape,
+**This system does not scramble text.** Once the slow buffer phase-locks
+onto the regular low-frequency signature of a word (its overall shape,
 spacing, horizontal bands), that lock persists. The letters stop drifting.
 
 This is the first observable consequence of hierarchical temporal coupling.
@@ -39,9 +38,9 @@ It was discovered empirically, not designed in.
 ## Architecture
 
 ```
-webcam (512×512×3)
-       │
-       ▼
+       webcam (512×512×3)
+              │
+              ▼
 ┌──────────────────────────────────────────────────────┐
 │  HierarchicalWaveCortex                              │
 │                                                      │
@@ -52,20 +51,20 @@ webcam (512×512×3)
 │    slow.phase_map  ──→  conditions fast encoder      │
 │    fast.eml_spike  ──→  boosts slow lr (adrenaline)  │
 └──────────────────────────────────────────────────────┘
-       │
-       ▼
-AdaptiveEncoderConv_v3  (5-channel input)
-  ch 0–2: RGB
-  ch   3: fast phase map   (temporal momentum)
-  ch   4: slow context map (global structure)
-       │
-       ▼
-latent [4, 64, 64]
-       │
-  cortex.update(latent, t)
-       │
-       ▼
-AdaptiveDecoderConv → reconstruction (512×512×3)
+              │
+              ▼
+    AdaptiveEncoderConv_v3  (5-channel input)
+      ch 0–2: RGB
+      ch   3: fast phase map   (temporal momentum)
+      ch   4: slow context map (global structure)
+              │
+              ▼
+      latent [4, 64, 64]
+              │
+         cortex.update(latent, t)
+              │
+              ▼
+    AdaptiveDecoderConv → reconstruction (512×512×3)
 ```
 
 Each latent voxel is tracked by a continuous oscillator:
@@ -74,8 +73,9 @@ Each latent voxel is tracked by a continuous oscillator:
 z(t) = A · sin(2π · f · t + φ)
 ```
 
-Parameters A, f, φ are updated online each frame. No discrete memory,
-no replay buffer, no hidden state. The memory **is** the oscillator field.
+Parameters A, f, φ are updated online each frame. There is no discrete
+memory, no replay buffer, and no hidden state vector. The memory **is**
+the oscillator field.
 
 ---
 
@@ -110,7 +110,7 @@ The slow buffer knows what this scene *is*.
 ### Top-Down: Slow → Fast
 
 The slow context map (upsampled to 512×512) is concatenated as channel 4
-of the encoder input. This is the **top-down prediction** signal.
+of the encoder input. This is the **top-down prediction signal**.
 
 The encoder now sees not just the current frame, but also what the last
 several seconds have established as stable global structure. This prior
@@ -141,67 +141,47 @@ and neuromodulator-gated learning seen in biological vision.
 That is the slow buffer re-normalising its prior. It is not a bug.
 
 **Rapid object learning**: show a new object slowly, hold it steady, and
-the slow buffer will lock onto it within seconds. Move it away and back
-quickly, and the slow buffer already has the model.
+the slow buffer will lock onto it within seconds.
 
 ---
 
 ## Relationship to Theoretical Frameworks
 
-### Neural ODEs
-
-The oscillator update rule is a discretised second-order ODE:
-
-```
-dA/dt   ≈ lr · error · sin(ωt + φ)
-dφ/dt   ≈ lr · error · A · cos(ωt + φ)
-df/dt   ≈ lr · error · A · t · cos(ωt + φ)
-```
-
-This is gradient descent on the parameters of a sinusoidal basis function,
-which is equivalent to solving a continuous latent ODE where the solution
-manifold is the set of all oscillatory trajectories. The system naturally
-prefers solutions that look like waves — smooth, periodic, continuous.
-
-### Diffusion Models
-
-Standard diffusion operates on artificial noise time τ, with no persistent
-state between samples. This system operates on **real physical time** t.
-
-The smoothness loss L_smooth = MSE(latent, buffer_prediction) is a form
-of denoising: pull the current latent toward what the oscillators expect.
-It is continuous diffusion along real time rather than artificial noise steps.
-
-Extension: inject a light denoising step in latent space conditioned on
-the slow context map. This would give temporally stable latent diffusion —
-the slow buffer anchors the trajectory, diffusion refines the texture.
-That is the natural next step.
-
 ### Predictive Coding (Neuroscience)
 
-This architecture is a concrete computational implementation of the
-predictive coding hypothesis (Rao & Ballard, 1999):
-
-- Slow buffer generates top-down predictions of scene structure
-- Fast buffer computes prediction errors (residuals)
-- Prediction errors propagate bottom-up to update the slow model
-- The adrenaline mechanism implements precision weighting:
-  high-surprise errors receive higher weight → faster updating
+This architecture is a direct computational implementation of the
+predictive coding hypothesis (Rao & Ballard, 1999). The slow buffer
+generates top-down predictions of scene structure, the fast buffer
+computes prediction errors, and the adrenaline mechanism implements
+precision weighting — high-surprise errors receive higher weight to
+force a faster update.
 
 The habituation, gain control, and rapid re-learning observed empirically
 are signatures of predictive coding operating in hardware.
 
-### Clockfield / Scalar Field Theory
+### Neural ODEs & Continuous Diffusion
 
-Each latent voxel is a scalar oscillator evolving under its own proper time.
-The fast-slow coupling is a two-scale Clockfield: fast voxels at high
-clock frequency, slow voxels at low clock frequency, coupled through the
-adrenaline signal (which functions as a Γ-like modulator of update rate).
+The oscillator update rule is a discretised second-order ODE — gradient
+descent on the parameters of a sinusoidal basis function. The system
+naturally prefers solutions that look like waves: smooth, periodic,
+continuous.
 
-The "letters stabilise" observation is equivalent to phase-locking in the
-Clockfield framework: the slow buffer's oscillators lock to the persistent
-spectral signature of the text, and the resulting stable attractor in the
-latent manifold resists perturbation from frame noise.
+The smoothness loss `L_smooth = MSE(latent, buffer_prediction)` acts as
+continuous temporal diffusion, pulling the current latent toward what the
+oscillators physically expect. This is diffusion along real time rather
+than an artificial noise schedule.
+
+### Coupled-Oscillator Phase Locking
+
+The frequencies (f) here are not fixed; they are learned via gradient
+descent alongside A and φ. What the system borrows from oscillator theory
+is the thermodynamic mechanism of phase-locking: once a set of oscillators
+lock onto a persistent spectral signature in the input (such as the regular
+banding of text), that lock resists perturbation from frame noise. The
+slow buffer becomes a stable attractor for scene geometry.
+
+This is why the letters stop scrambling. It is not semantic understanding —
+it is topological stability in a learned dynamical field.
 
 ---
 
@@ -214,43 +194,45 @@ latent manifold resists perturbation from frame noise.
 | Slow EML (orange) | Energy of the slow buffer's prediction field — smooth |
 | Training Loss (red) | MSE reconstruction + smoothness loss |
 | Adrenaline bar | Current surprise level — flares red on scene change |
-| β offset slider | Temporal interpolation: query the latent field at t±offset |
+| β offset slider | Temporal interpolation: query the latent field at t ± offset |
 
 The β offset slider is not a visual effect. It queries the oscillator
-field at a time offset and blends the predicted latent with the observed
-one. Positive offset = the system shows its prediction of the near future.
-Negative offset = it shows its memory of the recent past.
+field at a physical time offset and blends the predicted latent with the
+observed one. Positive offset = the system shows its prediction of the
+near future. Negative offset = it shows its memory of the recent past.
 
 ---
 
 ## Why This Is Not Hype
 
-Things that are real and reproducible:
+Things that are real and reproducible in this repository:
 
 1. Text stabilises within seconds of holding a page to the webcam
 2. The fast EML spikes when you cover the camera and decays when uncovered
-3. The slow EML tracks scene changes with a measurable lag behind fast
+3. The slow EML tracks scene changes with a measurable lag behind the fast EML
 4. The adrenaline bar fires on motion and decays to baseline on stillness
 5. The iris effect (momentary brightness on uncover) appears without any
-   explicit gain control code — it emerges from the buffer dynamics
+   explicit gain control code — it emerges entirely from the buffer dynamics
 
-Things that are not yet established:
+Things that are **not** yet established:
 
-- Whether the slow buffer is learning genuine semantic structure or
-  just low-frequency spatial statistics
-- Whether the system would scale to complex scenes without teacher guidance
-- Whether extending to N > 2 levels would produce qualitatively new behaviour
+- Whether the slow buffer is learning genuine semantic structure or just
+  low-frequency spatial statistics
+- Whether the system would scale to complex, multi-object scenes without
+  massive teacher guidance
+- Whether extending to N > 2 levels would produce qualitatively new
+  behaviour or just over-smooth the signal
 
 ---
 
 ## File Structure
 
 ```
-unitvae7.py               — main application (this file)
+unitvae7.py               — main GUI application
   WaveLatentBuffer        — vectorised oscillator array (per-voxel)
   HierarchicalWaveCortex  — two-level cortex (fast + slow + adrenaline)
   AdaptiveEncoderConv_v3  — 5-channel convolutional encoder
-  AdaptiveDecoderConv     — convolutional decoder (unchanged from v4)
+  AdaptiveDecoderConv     — convolutional decoder
   CortexTrainer           — training loop with smoothness loss
   HierarchicalCortexApp   — Tkinter GUI
 ```
@@ -268,9 +250,9 @@ pip install diffusers transformers
 python unitvae7.py
 ```
 
-Click **▶ Teach** to begin online learning from the webcam.
-The system starts from scratch each run (or load a `.pth` checkpoint).
-Learning is visible within 10–30 seconds on any hardware.
+Click **▶ Teach** to begin online learning from the webcam. The system
+starts from scratch each run (or load a `.pth` checkpoint). Learning is
+visible within 10–30 seconds on any hardware.
 
 ---
 
@@ -278,14 +260,14 @@ Learning is visible within 10–30 seconds on any hardware.
 
 ```
 PerceptionLab (wave-based node system, 2024)
-  → adelic_brain.py (prime oscillator neural signal)
-  → janus_cabbage (complex-valued holographic storage)
-  → ai_telepathy (wave-based knowledge transfer)
-  → unitvae4 (teacher-student latent distillation)
-  → unitvae5 (WaveLatentBuffer — temporal smoothness)
-  → unitvae7 (HierarchicalWaveCortex — two timescales)
-       ↑
-    THIS FILE
+  → adelic_brain.py     (prime oscillator neural signal)
+  → janus_cabbage.py    (complex-valued holographic storage)
+  → ai_telepathy        (wave-based knowledge transfer)
+  → unitvae4            (teacher-student latent distillation)
+  → unitvae5            (WaveLatentBuffer — temporal smoothness)
+  → unitvae7            (HierarchicalWaveCortex — two timescales)
+                                         ↑
+                                     THIS REPO
 ```
 
 The recurring primitive across all these systems:
