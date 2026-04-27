@@ -76,7 +76,8 @@ student encoder here is tiny and fast — the teacher shows it what a
 good latent looks like, dramatically accelerating learning.
 
 If `diffusers` is not installed, the system falls back to pure
-self-supervision (pixel reconstruction loss only). It still works, just
+self-supervision (pixel reconstruction loss only). It still works, 
+(I have not tried it without diffusers honestly, so perhaps not) just
 learns more slowly and with a less structured latent space.
 
 **What SVD contributes**: a well-trained spatial compression dictionary.
